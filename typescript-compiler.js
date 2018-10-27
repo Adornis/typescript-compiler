@@ -51,7 +51,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
     TypeScript.validateExtraOptions(extraOptions);
 
     this.extraOptions = extraOptions;
-    this.maxParallelism = maxParallelism || 10;
+    this.maxParallelism = maxParallelism || 15;
     this.serverOptions = null;
     this.tsconfig = TypeScript.getDefaultOptions();
     this.cfgHash = null;
@@ -135,8 +135,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
       results.set(file, result);
       pemit.end();
 
-      throwSyntax = throwSyntax | 
-        this._processDiagnostics(file, result.diagnostics, co);
+      throwSyntax = throwSyntax | this._processDiagnostics(file, result.diagnostics, co);
 
       done();
     }, future.resolver());
@@ -148,7 +147,23 @@ TypeScriptCompiler = class TypeScriptCompiler {
     if (! throwSyntax) {
       results.forEach((result, file) => {
         const module = options.compilerOptions.module;
-        this._addJavaScript(file, result, module === 'none');
+        if (file.supportsLazyCompilation) {
+          const inputPath = file.getPathInPackage();
+          const path = TypeScript.removeTsExt(inputPath) + '.js';
+          const hash = result.hash;
+          file.addJavaScript({
+            path: path,
+            hash: hash,
+            bare: isBare(file)
+          }, () => {
+            return this.processFile(file, result, module === 'none');
+          })
+        } else {
+          const toBeAdded = this.processFile(file, result, module === 'none');
+          if (toBeAdded) {
+            file.addJavaScript(toBeAdded);
+          }
+        }
       });
     }
 
@@ -172,7 +187,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
     };
   }
 
-  _addJavaScript(inputFile, tsResult, forceBare) {
+  processFile(inputFile, tsResult, forceBare) {
     const source = inputFile.getContentsAsString();
     const inputPath = inputFile.getPathInPackage();
     const outputPath = TypeScript.removeTsExt(inputPath) + '.js';
@@ -184,7 +199,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
       sourceMap: tsResult.sourceMap,
       bare: forceBare || isBare(inputFile)
     };
-    inputFile.addJavaScript(toBeAdded);
+    return toBeAdded;
   }
 
   _processDiagnostics(inputFile, diagnostics, tsOptions) {
@@ -234,7 +249,8 @@ TypeScriptCompiler = class TypeScriptCompiler {
     // And log out other errors except package files.
     if (tsOptions && tsOptions.diagnostics) {
       diagnostics.semanticErrors.forEach(diagnostic => {
-        reduce(diagnostic, dob => inputFile.warn(dob));
+        //TODO: Add env var condition
+        //reduce(diagnostic, dob => inputFile.warn(dob));
       });
     }
 
@@ -257,7 +273,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
       if (isMainConfig(inputFile)) {
         const source = inputFile.getContentsAsString();
         const hash = inputFile.getSourceHash();
-        // If hashes differ, create new tsconfig. 
+        // If hashes differ, create new tsconfig.
         if (hash !== this.cfgHash) {
           this.tsconfig = this._parseConfig(source, tsFiles);
           this.cfgHash = hash;
