@@ -9,7 +9,7 @@ const {
   getExcludeRegExp,
 } = Npm.require('meteor-typescript');
 
-const {createHash} = Npm.require('crypto');
+const { createHash } = Npm.require('crypto');
 
 import {
   getExtendedPath,
@@ -85,7 +85,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
     let { compilerOptions } = this.tsconfig;
     // Make a copy.
     compilerOptions = Object.assign({}, compilerOptions);
-    if (! isWeb(inputFile) && this.serverOptions) {
+    if (!isWeb(inputFile) && this.serverOptions) {
       Object.assign(compilerOptions, this.serverOptions);
     }
 
@@ -100,6 +100,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
   }
 
   processFilesForTarget(inputFiles, getDepsContent) {
+    const compileStartTime = new Date();
     extendFiles(inputFiles, WarnMixin);
 
     const options = this.getBuildOptions(inputFiles);
@@ -107,7 +108,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
 
     inputFiles = this.getFilesToProcess(inputFiles);
 
-    if (! inputFiles.length) return;
+    if (!inputFiles.length) return;
 
     const pcompile = Logger.newProfiler('compilation');
     const filePaths = inputFiles.map(file => getExtendedPath(file));
@@ -123,9 +124,12 @@ TypeScriptCompiler = class TypeScriptCompiler {
     const pfiles = Logger.newProfiler('tsEmitFiles');
     const future = new Future;
     // Don't emit typings.
-    const compileFiles = inputFiles.filter(file => ! isDeclaration(file));
+    const compileFiles = inputFiles.filter(file => !isDeclaration(file));
     let throwSyntax = false;
     const results = new Map();
+    let arch = '';
+    let totalWarnings = 0;
+    let filesWithWarning = 0;
     async.eachLimit(compileFiles, this.maxParallelism, (file, done) => {
       const co = options.compilerOptions;
 
@@ -135,7 +139,14 @@ TypeScriptCompiler = class TypeScriptCompiler {
       results.set(file, result);
       pemit.end();
 
-      throwSyntax = throwSyntax | this._processDiagnostics(file, result.diagnostics, co);
+      const diagnostics = this._processDiagnostics(file, result.diagnostics, co);
+      throwSyntax = throwSyntax | diagnostics.throwSyntax;
+
+      arch = diagnostics.arch;
+      if (diagnostics.warningCount > 0) {
+        totalWarnings += diagnostics.warningCount;
+        filesWithWarning++;
+      }
 
       done();
     }, future.resolver());
@@ -144,7 +155,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
 
     future.wait();
 
-    if (! throwSyntax) {
+    if (!throwSyntax) {
       results.forEach((result, file) => {
         const module = options.compilerOptions.module;
         if (file.supportsLazyCompilation) {
@@ -154,17 +165,26 @@ TypeScriptCompiler = class TypeScriptCompiler {
           file.addJavaScript({
             path: path,
             hash: hash,
-            bare: isBare(file)
+            bare: isBare(file),
           }, () => {
-            return this.processFile(file, result, module === 'none');
-          })
+            return this._processFile(file, result, module === 'none');
+          });
         } else {
-          const toBeAdded = this.processFile(file, result, module === 'none');
+          const toBeAdded = this._processFile(file, result, module === 'none');
           if (toBeAdded) {
             file.addJavaScript(toBeAdded);
           }
         }
       });
+    }
+
+    if (arch !== 'web.cordova' && arch !== 'web.browser.legacy') {
+      const compileDoneTime = new Date();
+      Logger.info(`[COMPILER]: Finished building for ${arch} in ${compileDoneTime - compileStartTime}ms.`);
+
+      if (filesWithWarning > 0) {
+        Logger.warn(`Found ${totalWarnings} warnings in ${filesWithWarning} files.`);
+      }
     }
 
     pcompile.end();
@@ -187,8 +207,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
     };
   }
 
-  processFile(inputFile, tsResult, forceBare) {
-    const source = inputFile.getContentsAsString();
+  _processFile(inputFile, tsResult, forceBare) {
     const inputPath = inputFile.getPathInPackage();
     const outputPath = TypeScript.removeTsExt(inputPath) + '.js';
     const toBeAdded = {
@@ -197,7 +216,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
       data: tsResult.code,
       hash: tsResult.hash,
       sourceMap: tsResult.sourceMap,
-      bare: forceBare || isBare(inputFile)
+      bare: forceBare || isBare(inputFile),
     };
     return toBeAdded;
   }
@@ -205,12 +224,15 @@ TypeScriptCompiler = class TypeScriptCompiler {
   _processDiagnostics(inputFile, diagnostics, tsOptions) {
     // Remove duplicated warnings for shared files
     // by saving hashes of already shown warnings.
+
+    const arch = inputFile.getArch();
+
     const reduce = (diagnostic, cb) => {
       let dob = {
         message: diagnostic.message,
         sourcePath: getExtendedPath(inputFile),
         line: diagnostic.line,
-        column: diagnostic.column
+        column: diagnostic.column,
       };
       const arch = inputFile.getArch();
       // TODO: find out how to get list of architectures.
@@ -222,21 +244,22 @@ TypeScriptCompiler = class TypeScriptCompiler {
           dob.arch = key;
           const hash = getShallowHash(dob);
           if (this.diagHash.has(hash)) {
-            shown = true; break;
+            shown = true;
+            break;
           }
         }
       }
 
-      if (! shown) {
+      if (!shown) {
         dob.arch = arch;
         const hash = getShallowHash(dob);
         this.diagHash.add(hash);
         cb(dob);
       }
-    }
+    };
 
     // Always throw syntax errors.
-    const throwSyntax = !! diagnostics.syntacticErrors.length;
+    const throwSyntax = !!diagnostics.syntacticErrors.length;
     diagnostics.syntacticErrors.forEach(diagnostic => {
       reduce(diagnostic, dob => {
         inputFile.error(dob);
@@ -247,14 +270,20 @@ TypeScriptCompiler = class TypeScriptCompiler {
     if (packageName) return throwSyntax;
 
     // And log out other errors except package files.
+    let warningCount = 0;
     if (tsOptions && tsOptions.diagnostics) {
       diagnostics.semanticErrors.forEach(diagnostic => {
         //TODO: Add env var condition
+        warningCount++;
         //reduce(diagnostic, dob => inputFile.warn(dob));
       });
     }
 
-    return throwSyntax;
+    return {
+      throwSyntax: throwSyntax,
+      warningCount: warningCount,
+      arch: inputFile.getArch(),
+    };
   }
 
   _getFileModuleName(inputFile, options) {
@@ -284,7 +313,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
       // Parse server config.
       // Take only target and lib values.
       if (isServerConfig(inputFile)) {
-        const  source = inputFile.getContentsAsString();
+        const source = inputFile.getContentsAsString();
         const { compilerOptions } = this._parseConfig(source, tsFiles);
         if (compilerOptions) {
           const { target, lib } = compilerOptions;
@@ -306,7 +335,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
       tsconfig.files = files;
 
       validateTsConfig(tsconfig);
-    } catch(err) {
+    } catch (err) {
       throw new Error(`Format of the tsconfig is invalid: ${err}`);
     }
 
@@ -314,7 +343,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
     try {
       const regExp = getExcludeRegExp(exclude);
       tsconfig.exclude = regExp && new RegExp(regExp);
-    } catch(err) {
+    } catch (err) {
       throw new Error(`Format of an exclude path is invalid: ${err}`);
     }
 
@@ -324,7 +353,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
   _filterByDefault(inputFiles) {
     inputFiles = inputFiles.filter(inputFile => {
       const path = inputFile.getPathInPackage();
-      return COMPILER_REGEXP.test(path) && ! defExclude.test('/' + path);
+      return COMPILER_REGEXP.test(path) && !defExclude.test('/' + path);
     });
     return inputFiles;
   }
@@ -336,7 +365,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
         const path = inputFile.getPathInPackage();
         // There seems to an issue with getRegularExpressionForWildcard:
         // result regexp always starts with /.
-        return ! this.tsconfig.exclude.test('/' + path);
+        return !this.tsconfig.exclude.test('/' + path);
       });
     }
     return resultFiles;
@@ -353,9 +382,9 @@ TypeScriptCompiler = class TypeScriptCompiler {
     const filterRegExp = /^web/.test(arch) ? exlWebRegExp : exlMainRegExp;
     inputFiles = inputFiles.filter(inputFile => {
       const path = inputFile.getPathInPackage();
-      return ! filterRegExp.test('/' + path);
+      return !filterRegExp.test('/' + path);
     });
 
     return inputFiles;
   }
-}
+};

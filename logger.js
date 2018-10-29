@@ -1,4 +1,5 @@
 const util = Npm.require('util');
+const chalk = Npm.require('chalk');
 
 class Logger_ {
   constructor() {
@@ -29,6 +30,14 @@ class Logger_ {
     }
   }
 
+  warn(msg) {
+    process.stdout.write(chalk.bold.yellow(msg + '\n'));
+  }
+
+  info(msg) {
+    process.stdout.write(chalk.bold.green(msg) + chalk.dim(' '));
+  }
+
   debug(msg, ...args) {
     if (this.isDebug) {
       this.log.apply(this, msg, args);
@@ -40,7 +49,7 @@ class Logger_ {
       this.log.apply(this, msg, args);
     }
   }
-};
+}
 
 Logger = new Logger_();
 
