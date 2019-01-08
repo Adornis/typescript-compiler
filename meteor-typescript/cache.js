@@ -9,7 +9,8 @@ var utils = require('./utils');
 var globalSourceHost = require('./files-source-host');
 var logger = require('./logger').default;
 
-var pkgVersion = require('./package.json').version;
+// this is broken because i copied the sources into this from the npm package
+var pkgVersion = '0.9.1'; // require('./package.json').version;
 
 function meteorLocalDir() {
   var cwdDir = process.cwd();
