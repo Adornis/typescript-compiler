@@ -1,8 +1,8 @@
-const meteorTS = Npm.require('meteor-typescript');
+const meteorTS = require('./meteor-typescript');
 
 TypeScript = {
   validateOptions(options) {
-    if (! options) return;
+    if (!options) return;
 
     meteorTS.validateAndConvertOptions(options);
   },
@@ -10,10 +10,10 @@ TypeScript = {
   // Extra options are the same compiler options
   // but passed in the compiler constructor.
   validateExtraOptions(options) {
-    if (! options) return;
+    if (!options) return;
 
     meteorTS.validateAndConvertOptions({
-      compilerOptions: options
+      compilerOptions: options,
     });
   },
 
@@ -34,5 +34,5 @@ TypeScript = {
 
   removeTsExt(path) {
     return path && path.replace(/(\.tsx|\.ts)$/g, '');
-  }
+  },
 };

@@ -1,0 +1,49 @@
+{
+  "name": "meteor-typescript",
+  "author": "@barbatus",
+  "version": "0.9.0",
+  "license": "MIT",
+  "description": "TypeScript wrapper package for use with Meteor",
+  "keywords": [
+    "meteor",
+    "typescript",
+    "es6",
+    "es7",
+    "transpiler",
+    "transpilation",
+    "compilation"
+  ],
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "babel . -d dist --ignore node_modules,tests,dist,coverage",
+    "test:run": "tests/run.sh",
+    "test": "npm run build && npm run test:run",
+    "coverage": "cat ./tests/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/barbatus/meteor-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/barbatus/meteor-typescript/issues"
+  },
+  "dependencies": {
+    "diff": "^2.2.2",
+    "lru-cache": "^4.1.1",
+    "object-sizeof": "^1.2.0",
+    "random-js": "^1.0.3",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "coveralls": "^2.11.9",
+    "istanbul": "^0.4.3",
+    "jasmine-node": "^1.14.5",
+    "randomstring": "^1.1.4"
+  }
+}

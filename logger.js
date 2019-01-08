@@ -35,7 +35,7 @@ class Logger_ {
   }
 
   info(msg) {
-    process.stdout.write(chalk.bold.green(msg) + chalk.dim(' '));
+    process.stdout.write(chalk.bold.green(msg) + chalk.dim(' ') + '\n');
   }
 
   debug(msg, ...args) {

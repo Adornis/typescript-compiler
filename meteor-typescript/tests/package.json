@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "dependencies": {
+    "@types/jquery": "^2.0.0",
+    "@types/meteor": "^1.4.15"
+  },
+  "license": "MIT"
+}

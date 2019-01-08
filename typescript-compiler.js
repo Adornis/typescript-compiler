@@ -3,11 +3,7 @@ const path = Npm.require('path');
 const fs = Npm.require('fs');
 const Future = Npm.require('fibers/future');
 
-const {
-  TSBuild,
-  validateTsConfig,
-  getExcludeRegExp,
-} = Npm.require('meteor-typescript');
+const { TSBuild, validateTsConfig, getExcludeRegExp } = require('./meteor-typescript');
 
 const { createHash } = Npm.require('crypto');
 
@@ -24,23 +20,18 @@ import {
   isWeb,
 } from './file-utils';
 
-import {
-  getShallowHash,
-} from './utils';
+import { getShallowHash } from './utils';
 
 // Default exclude paths.
-const defExclude = new RegExp(
-  getExcludeRegExp(['node_modules/**']));
+const defExclude = new RegExp(getExcludeRegExp(['node_modules/**']));
 
 // What to exclude when compiling for the server.
 // typings/main and typings/browser seem to be not used
 // at all but let keep them for just in case.
-const exlWebRegExp = new RegExp(
-  getExcludeRegExp(['typings/main/**', 'typings/main.d.ts']));
+const exlWebRegExp = new RegExp(getExcludeRegExp(['typings/main/**', 'typings/main.d.ts']));
 
 // What to exclude when compiling for the client.
-const exlMainRegExp = new RegExp(
-  getExcludeRegExp(['typings/browser/**', 'typings/browser.d.ts']));
+const exlMainRegExp = new RegExp(getExcludeRegExp(['typings/browser/**', 'typings/browser.d.ts']));
 
 const COMPILER_REGEXP = /(\.d.ts|\.ts|\.tsx|\.tsconfig)$/;
 
@@ -55,8 +46,8 @@ TypeScriptCompiler = class TypeScriptCompiler {
     this.serverOptions = null;
     this.tsconfig = TypeScript.getDefaultOptions();
     this.cfgHash = null;
-    this.diagHash = new Set;
-    this.archSet = new Set;
+    this.diagHash = new Set();
+    this.archSet = new Set();
   }
 
   getFilesToProcess(inputFiles) {
@@ -116,13 +107,13 @@ TypeScriptCompiler = class TypeScriptCompiler {
 
     const pbuild = Logger.newProfiler('tsBuild');
     const defaultGet = this._getContentGetter(inputFiles);
-    const getContent = filePath =>
-      (getDepsContent && getDepsContent(filePath)) || defaultGet(filePath);
+    const getContent = filePath => (getDepsContent && getDepsContent(filePath)) || defaultGet(filePath);
+    Logger.info(`[COMPILER]: Starting build for ${options.arch}`);
     const tsBuild = new TSBuild(filePaths, getContent, options);
     pbuild.end();
 
     const pfiles = Logger.newProfiler('tsEmitFiles');
-    const future = new Future;
+    const future = new Future();
     // Don't emit typings.
     const compileFiles = inputFiles.filter(file => !isDeclaration(file));
     let throwSyntax = false;
@@ -130,26 +121,31 @@ TypeScriptCompiler = class TypeScriptCompiler {
     let arch = '';
     let totalWarnings = 0;
     let filesWithWarning = 0;
-    async.eachLimit(compileFiles, this.maxParallelism, (file, done) => {
-      const co = options.compilerOptions;
+    async.eachLimit(
+      compileFiles,
+      this.maxParallelism,
+      (file, done) => {
+        const co = options.compilerOptions;
 
-      const filePath = getExtendedPath(file);
-      const pemit = Logger.newProfiler('tsEmit');
-      const result = tsBuild.emit(filePath);
-      results.set(file, result);
-      pemit.end();
+        const filePath = getExtendedPath(file);
+        const pemit = Logger.newProfiler('tsEmit');
+        const result = tsBuild.emit(filePath);
+        results.set(file, result);
+        pemit.end();
 
-      const diagnostics = this._processDiagnostics(file, result.diagnostics, co);
-      throwSyntax = throwSyntax | diagnostics.throwSyntax;
+        const diagnostics = this._processDiagnostics(file, result.diagnostics, co);
+        throwSyntax = throwSyntax | diagnostics.throwSyntax;
 
-      arch = diagnostics.arch;
-      if (diagnostics.warningCount > 0) {
-        totalWarnings += diagnostics.warningCount;
-        filesWithWarning++;
-      }
+        arch = diagnostics.arch;
+        if (diagnostics.warningCount > 0) {
+          totalWarnings += diagnostics.warningCount;
+          filesWithWarning++;
+        }
 
-      done();
-    }, future.resolver());
+        done();
+      },
+      future.resolver(),
+    );
 
     pfiles.end();
 
@@ -162,13 +158,16 @@ TypeScriptCompiler = class TypeScriptCompiler {
           const inputPath = file.getPathInPackage();
           const path = TypeScript.removeTsExt(inputPath) + '.js';
           const hash = result.hash;
-          file.addJavaScript({
-            path: path,
-            hash: hash,
-            bare: isBare(file),
-          }, () => {
-            return this._processFile(file, result, module === 'none');
-          });
+          file.addJavaScript(
+            {
+              path: path,
+              hash: hash,
+              bare: isBare(file),
+            },
+            () => {
+              return this._processFile(file, result, module === 'none');
+            },
+          );
         } else {
           const toBeAdded = this._processFile(file, result, module === 'none');
           if (toBeAdded) {
@@ -180,10 +179,10 @@ TypeScriptCompiler = class TypeScriptCompiler {
 
     if (arch !== 'web.cordova' && arch !== 'web.browser.legacy') {
       const compileDoneTime = new Date();
-      Logger.info(`[COMPILER]: Finished building for ${arch} in ${compileDoneTime - compileStartTime}ms.`);
+      Logger.info(`            Finished build for ${arch} in ${compileDoneTime - compileStartTime}ms.`);
 
       if (filesWithWarning > 0) {
-        Logger.warn(`Found ${totalWarnings} warnings in ${filesWithWarning} files.`);
+        Logger.warn(`            Found ${totalWarnings} warnings in ${filesWithWarning} files.`);
       }
     }
 
@@ -191,7 +190,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
   }
 
   _getContentGetter(inputFiles) {
-    const filesMap = new Map;
+    const filesMap = new Map();
     inputFiles.forEach((inputFile, index) => {
       filesMap.set(getExtendedPath(inputFile), index);
     });
@@ -202,8 +201,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
         const filePathNoRootSlash = filePath.replace(/^\//, '');
         index = filesMap.get(filePathNoRootSlash);
       }
-      return index !== undefined ?
-        inputFiles[index].getContentsAsString() : null;
+      return index !== undefined ? inputFiles[index].getContentsAsString() : null;
     };
   }
 

@@ -1,39 +1,26 @@
 Package.describe({
   name: 'adornis:typescript-compiler',
-  version: '0.11.1',
-  summary: 'TypeScript Compiler for Meteor',
-  git: 'https://github.com/barbatus/typescript-compiler',
-  documentation: 'README.md'
+  version: '0.12.0',
+  summary: 'TypeScript Compiler for Meteor, prop to barbatus:typescript-compiler',
+  git: 'https://github.com/adornis/typescript-compiler',
+  documentation: 'README.md',
 });
 
 Npm.depends({
-  'meteor-typescript': '0.9.0',
-  'async': '2.5.0',
-  'colors': '1.1.2',
-  'chalk': '2.4.1'
+  // 'meteor-typescript': '0.9.0', // is now in this directory because I'm lazy
+  async: '2.5.0',
+  colors: '1.1.2',
+  chalk: '2.4.1',
 });
 
 Package.onUse(function(api) {
   api.versionsFrom('1.4.1');
 
-  api.use([
-    'ecmascript@0.10.8',
-    'check@1.0.5',
-    'underscore@1.0.4',
-  ], 'server');
+  api.use(['ecmascript@0.10.8', 'check@1.0.5', 'underscore@1.0.4'], 'server');
 
-  api.addFiles([
-    'logger.js',
-    'file-utils.js',
-    'typescript-compiler.js',
-    'typescript.js',
-    'utils.js',
-  ], 'server');
+  api.addFiles(['logger.js', 'file-utils.js', 'typescript-compiler.js', 'typescript.js', 'utils.js'], 'server');
 
-  api.export([
-    'TypeScript',
-    'TypeScriptCompiler',
-  ], 'server');
+  api.export(['TypeScript', 'TypeScriptCompiler'], 'server');
 });
 
 Package.onTest(function(api) {
@@ -47,10 +34,7 @@ Package.onTest(function(api) {
     'meteortesting:mocha',
     'dispatch:mocha-phantomjs',
   ]);
-  api.use('barbatus:typescript-compiler');
+  api.use('adornis:typescript-compiler');
 
-  api.addFiles([
-    'tests/server/unit/input-file.js',
-    'tests/server/unit/compiler-tests_spec.js',
-  ], 'server');
+  api.addFiles(['tests/server/unit/input-file.js', 'tests/server/unit/compiler-tests_spec.js'], 'server');
 });
