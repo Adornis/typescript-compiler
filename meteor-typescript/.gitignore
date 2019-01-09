@@ -1,6 +1,0 @@
-.meteor
-node_modules
-tests/.cache
-coverage
-dist
-

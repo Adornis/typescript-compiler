@@ -1,23 +1,24 @@
-import assert from "assert";
-import ts from "typescript";
-import _ from "underscore";
+import assert from 'assert';
+// import ts from 'typescript';
+const ts = Npm.require('typescript');
+// import _ from 'underscore';
+const _ = Npm.require('underscore');
 
-import { assertProps } from "./utils";
+import { assertProps } from './utils';
 
 // 1) Normalizes slashes in the file path
 // 2) Removes file extension
 export function normalizePath(filePath) {
   let resultName = filePath;
-  if (ts.fileExtensionIs(filePath, ".map")) {
-    resultName = filePath.replace(/\.map$/, "");
+  if (ts.fileExtensionIs(filePath, '.map')) {
+    resultName = filePath.replace(/\.map$/, '');
   }
-  return ts.removeFileExtension(
-    ts.normalizeSlashes(resultName));
+  return ts.removeFileExtension(ts.normalizeSlashes(resultName));
 }
 
 export function getRootedPath(filePath) {
   if (ts.getRootLength(filePath) === 0) {
-    return "/" + filePath;
+    return '/' + filePath;
   }
   return filePath;
 }
@@ -90,7 +91,7 @@ function getDeps(sourceFile, checker) {
       }
     });
     paths.forEach(function(path) {
-      modules.push(path)
+      modules.push(path);
     });
   }
 
@@ -131,11 +132,12 @@ function getMappings(sourceFile) {
 function getRefs(sourceFile) {
   // Collect referenced file paths, e.g.:
   // /// <reference path=".." />
-  let refTypings = [], refFiles = [];
+  let refTypings = [],
+    refFiles = [];
   if (sourceFile.referencedFiles) {
-    const refPaths = sourceFile.referencedFiles.map((ref) => ref.fileName);
-    refTypings = _.filter(refPaths, (ref) => isTypings(ref));
-    refFiles = _.filter(refPaths, (ref) => !isTypings(ref));
+    const refPaths = sourceFile.referencedFiles.map(ref => ref.fileName);
+    refTypings = _.filter(refPaths, ref => isTypings(ref));
+    refFiles = _.filter(refPaths, ref => !isTypings(ref));
   }
 
   // Collect resolved paths to referenced declaration types, e.g.:
@@ -168,22 +170,17 @@ export class TsDiagnostics {
   constructor(diagnostics) {
     assert.ok(this instanceof TsDiagnostics);
     assert.ok(diagnostics);
-    assertProps(diagnostics, [
-      "syntacticErrors", "semanticErrors",
-    ]);
+    assertProps(diagnostics, ['syntacticErrors', 'semanticErrors']);
 
     _.extend(this, diagnostics);
   }
 
   hasErrors() {
-    return !!this.semanticErrors.length ||
-      !!this.syntacticErrors.length;
+    return !!this.semanticErrors.length || !!this.syntacticErrors.length;
   }
 
   hasUnresolvedModules() {
-    const index = _.findIndex(this.semanticErrors, (msg) => 
-      msg.code === ts.Diagnostics.Cannot_find_module_0.code
-    );
+    const index = _.findIndex(this.semanticErrors, msg => msg.code === ts.Diagnostics.Cannot_find_module_0.code);
     return index !== -1;
   }
 }
@@ -197,7 +194,7 @@ function flattenDiagnostics(tsDiagnostics) {
     if (!diagnostic.file) continue;
 
     const pos = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
     const line = pos.line + 1;
     const column = pos.character + 1;
 
@@ -216,20 +213,20 @@ function flattenDiagnostics(tsDiagnostics) {
 export function hasErrors(diagnostics) {
   if (!diagnostics) return true;
 
-  return diagnostics.semanticErrors.length ||
-    diagnostics.syntacticErrors.length;
+  return diagnostics.semanticErrors.length || diagnostics.syntacticErrors.length;
 }
 
 export function isSourceMap(fileName) {
-  return ts.fileExtensionIs(fileName, ".map");
+  return ts.fileExtensionIs(fileName, '.map');
 }
 
 export function isTypings(fileName) {
-  return ts.fileExtensionIs(fileName, ".d.ts");
+  return ts.fileExtensionIs(fileName, '.d.ts');
 }
 
 export function getExcludeRegExp(exclude) {
   if (!exclude) return exclude;
 
-  return ts.getRegularExpressionForWildcard(exclude, "", "exclude");
+  if (!ts.version) console.trace();
+  return ts.getRegularExpressionForWildcard(exclude, '', 'exclude');
 }
