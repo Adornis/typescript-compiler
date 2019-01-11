@@ -1,8 +1,8 @@
-var ts = require("typescript");
-var _ = require("underscore");
+var ts = require('typescript');
+var _ = require('underscore');
 
 function presetCompilerOptions(customOptions) {
-  if (! customOptions) return;
+  if (!customOptions) return;
 
   var compilerOptions = customOptions;
 
@@ -43,12 +43,12 @@ exports.presetCompilerOptions = presetCompilerOptions;
 // Default compiler options.
 function getDefaultCompilerOptions(arch) {
   var options = {
-    target: "es5",
-    module : "commonjs",
-    moduleResolution: "node",
+    target: 'es5',
+    module: 'commonjs',
+    moduleResolution: 'node',
     sourceMap: true,
     noResolve: false,
-    lib: ["es5"],
+    lib: ['es5'],
     diagnostics: true,
     noEmitHelpers: true,
     // Always emit class metadata,
@@ -58,12 +58,12 @@ function getDefaultCompilerOptions(arch) {
     experimentalDecorators: true,
     // Don't impose `use strict`
     noImplicitUseStrict: true,
-    baseUrl: ".",
-    rootDirs: ["."],
+    baseUrl: '.',
+    rootDirs: ['.'],
   };
 
   if (/^web/.test(arch)) {
-    options.lib.push("dom");
+    options.lib.push('dom');
   }
 
   return options;
@@ -71,13 +71,13 @@ function getDefaultCompilerOptions(arch) {
 
 exports.getDefaultCompilerOptions = getDefaultCompilerOptions;
 
-// Validate compiler options and convert them from 
+// Validate compiler options and convert them from
 // user-friendly format to enum values used by TypeScript, e.g.:
 // 'system' string converted to ts.ModuleKind.System value.
 function convertCompilerOptionsOrThrow(options) {
-  if (! options) return null;
+  if (!options) return null;
 
-  var result = ts.convertCompilerOptionsFromJson(options, "");
+  var result = ts.convertCompilerOptionsFromJson(options, '');
 
   if (result.errors && result.errors.length) {
     throw new Error(result.errors[0].messageText);
@@ -89,7 +89,7 @@ function convertCompilerOptionsOrThrow(options) {
 exports.convertCompilerOptionsOrThrow = convertCompilerOptionsOrThrow;
 
 function validateTsConfig(configJson) {
-  var result = ts.parseJsonConfigFileContent(configJson, ts.sys, "");
+  var result = ts.parseJsonConfigFileContent(configJson, ts.sys, '');
 
   if (result.errors && result.errors.length) {
     throw new Error(result.errors[0].messageText);

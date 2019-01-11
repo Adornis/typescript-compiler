@@ -1,4 +1,4 @@
-const {createHash} = Npm.require('crypto');
+const { createHash } = Npm.require('crypto');
 
 export function getShallowHash(ob) {
   const hash = createHash('sha1');

@@ -1,7 +1,7 @@
-import ts from "typescript";
-import * as jsdiff from "diff";
+import ts from 'typescript';
+import * as jsdiff from 'diff';
 
-import logger from "./logger";
+import logger from './logger';
 
 export default class StringScriptSnapshot {
   constructor(text) {
@@ -27,15 +27,13 @@ export default class StringScriptSnapshot {
         const diff = diffs[i];
 
         if (diff.added) {
-          changes.push(ts.createTextChangeRange(
-            ts.createTextSpan(ind, 0), diff.count));
+          changes.push(ts.createTextChangeRange(ts.createTextSpan(ind, 0), diff.count));
           ind += diff.count;
           continue;
         }
 
         if (diff.removed) {
-          changes.push(ts.createTextChangeRange(
-            ts.createTextSpan(ind, diff.count), 0));
+          changes.push(ts.createTextChangeRange(ts.createTextSpan(ind, diff.count), 0));
           continue;
         }
 
@@ -43,7 +41,7 @@ export default class StringScriptSnapshot {
       }
 
       changes = ts.collapseTextChangeRangesAcrossMultipleVersions(changes);
-      logger.assert("accumulated file changes %j", changes);
+      logger.assert('accumulated file changes %j', changes);
 
       return changes;
     }

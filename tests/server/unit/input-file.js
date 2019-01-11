@@ -49,7 +49,7 @@ InputFile = class InputFile {
   warn(error) {
     this.error = error;
   }
-}
+};
 
 ConfigFile = class ConfigFile extends InputFile {
   constructor(config, path, arch = 'web') {
@@ -62,4 +62,4 @@ ConfigFile = class ConfigFile extends InputFile {
   getContentsAsString() {
     return JSON.stringify(this);
   }
-}
+};

@@ -1,11 +1,7 @@
-const async = Npm.require('async');
 const path = Npm.require('path');
 const fs = Npm.require('fs');
-const Future = Npm.require('fibers/future');
 
 const { TSBuild, validateTsConfig, getExcludeRegExp } = require('./meteor-typescript');
-
-const { createHash } = Npm.require('crypto');
 
 import {
   getExtendedPath,
@@ -113,7 +109,6 @@ TypeScriptCompiler = class TypeScriptCompiler {
     pbuild.end();
 
     const pfiles = Logger.newProfiler('tsEmitFiles');
-    const future = new Future();
     // Don't emit typings.
     const compileFiles = inputFiles.filter(file => !isDeclaration(file));
     let throwSyntax = false;
@@ -121,35 +116,26 @@ TypeScriptCompiler = class TypeScriptCompiler {
     let arch = '';
     let totalWarnings = 0;
     let filesWithWarning = 0;
-    async.eachLimit(
-      compileFiles,
-      this.maxParallelism,
-      (file, done) => {
-        const co = options.compilerOptions;
+    compileFiles.forEach((file, done) => {
+      const co = options.compilerOptions;
 
-        const filePath = getExtendedPath(file);
-        const pemit = Logger.newProfiler('tsEmit');
-        const result = tsBuild.emit(filePath);
-        results.set(file, result);
-        pemit.end();
+      const filePath = getExtendedPath(file);
+      const pemit = Logger.newProfiler('tsEmit');
+      const result = tsBuild.emit(filePath);
+      results.set(file, result);
+      pemit.end();
 
-        const diagnostics = this._processDiagnostics(file, result.diagnostics, co);
-        throwSyntax = throwSyntax | diagnostics.throwSyntax;
+      const diagnostics = this._processDiagnostics(file, result.diagnostics, co);
+      throwSyntax = throwSyntax | diagnostics.throwSyntax;
 
-        arch = diagnostics.arch;
-        if (diagnostics.warningCount > 0) {
-          totalWarnings += diagnostics.warningCount;
-          filesWithWarning++;
-        }
-
-        done();
-      },
-      future.resolver(),
-    );
+      arch = diagnostics.arch;
+      if (diagnostics.warningCount > 0) {
+        totalWarnings += diagnostics.warningCount;
+        filesWithWarning++;
+      }
+    });
 
     pfiles.end();
-
-    future.wait();
 
     if (!throwSyntax) {
       results.forEach((result, file) => {
@@ -177,14 +163,14 @@ TypeScriptCompiler = class TypeScriptCompiler {
       });
     }
 
-    if (arch !== 'web.cordova' && arch !== 'web.browser.legacy') {
-      const compileDoneTime = new Date();
-      Logger.info(`            Finished build for ${arch} in ${compileDoneTime - compileStartTime}ms.`);
+    // if (arch !== 'web.cordova' && arch !== 'web.browser.legacy') {
+    const compileDoneTime = new Date();
+    Logger.info(`            Finished build for ${arch} in ${compileDoneTime - compileStartTime}ms.`);
 
-      if (filesWithWarning > 0) {
-        Logger.warn(`            Found ${totalWarnings} warnings in ${filesWithWarning} files.`);
-      }
+    if (filesWithWarning > 0) {
+      Logger.warn(`            Found ${totalWarnings} warnings in ${filesWithWarning} files.`);
     }
+    // }
 
     pcompile.end();
   }

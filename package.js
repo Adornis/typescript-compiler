@@ -1,6 +1,6 @@
 Package.describe({
   name: 'adornis:typescript-compiler',
-  version: '0.12.3',
+  version: '0.12.4',
   summary: 'TypeScript Compiler for Meteor, prop to barbatus:typescript-compiler',
   git: 'https://github.com/adornis/typescript-compiler',
   documentation: 'README.md',

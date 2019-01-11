@@ -1,5 +1,5 @@
-import ts from "typescript";
-import _ from "underscore";
+import ts from 'typescript';
+import _ from 'underscore';
 
 const ROOTED = /^(\/|\\)/;
 

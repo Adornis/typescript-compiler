@@ -26,7 +26,7 @@ export function setCacheDir(cacheDir) {
   if (compileCache && compileCache.cacheDir === cacheDir) {
     return;
   }
-
+ 
   compileCache = new CompileCache(cacheDir);
   fileHashCache = new FileHashCache(cacheDir);
 }

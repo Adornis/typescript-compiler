@@ -1,4 +1,4 @@
-import logger from "./logger";
+import logger from './logger';
 
 export const RefsChangeType = {
   NONE: 0,
@@ -9,11 +9,10 @@ export const RefsChangeType = {
 
 export function evalRefsChangeMap(filePaths, isFileChanged, getRefs, maxDepth) {
   const refsChangeMap = {};
-  filePaths.forEach((filePath) => {
+  filePaths.forEach(filePath => {
     if (refsChangeMap[filePath]) return;
-    refsChangeMap[filePath] = evalRefsChange(filePath,
-      isFileChanged, getRefs, refsChangeMap, maxDepth);
-    logger.assert("set ref changes: %s %s", filePath, refsChangeMap[filePath]);
+    refsChangeMap[filePath] = evalRefsChange(filePath, isFileChanged, getRefs, refsChangeMap, maxDepth);
+    logger.assert('set ref changes: %s %s', filePath, refsChangeMap[filePath]);
   });
   return refsChangeMap;
 }
@@ -67,19 +66,19 @@ function isRefsChanged(filePath, isFileChanged, refs) {
   if (refs) {
     const typings = refs.refTypings;
     if (isFilesChanged(typings)) {
-      logger.debug("referenced typings changed in %s", filePath);
+      logger.debug('referenced typings changed in %s', filePath);
       return RefsChangeType.TYPINGS;
     }
 
     const files = refs.refFiles;
     if (isFilesChanged(files)) {
-      logger.debug("referenced files changed in %s", filePath);
+      logger.debug('referenced files changed in %s', filePath);
       return RefsChangeType.FILES;
     }
 
     const modules = refs.modules;
     if (isFilesChanged(modules)) {
-      logger.debug("imported module changed in %s", filePath);
+      logger.debug('imported module changed in %s', filePath);
       return RefsChangeType.MODULES;
     }
   }
