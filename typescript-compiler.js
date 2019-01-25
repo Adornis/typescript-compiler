@@ -1,12 +1,8 @@
-const path = Npm.require('path');
-const fs = Npm.require('fs');
-
 const { TSBuild, validateTsConfig, getExcludeRegExp } = require('./meteor-typescript');
 
 import {
   getExtendedPath,
   isDeclaration,
-  isConfig,
   isMainConfig,
   isServerConfig,
   isBare,
@@ -116,7 +112,7 @@ TypeScriptCompiler = class TypeScriptCompiler {
     let arch = '';
     let totalWarnings = 0;
     let filesWithWarning = 0;
-    compileFiles.forEach((file, done) => {
+    compileFiles.forEach(file => {
       const co = options.compilerOptions;
 
       const filePath = getExtendedPath(file);
@@ -161,16 +157,16 @@ TypeScriptCompiler = class TypeScriptCompiler {
           }
         }
       });
+    } else {
+      Logger.warn('           cant compile because of syntax errors');
     }
 
-    // if (arch !== 'web.cordova' && arch !== 'web.browser.legacy') {
     const compileDoneTime = new Date();
     Logger.info(`            Finished build for ${arch} in ${compileDoneTime - compileStartTime}ms.`);
 
     if (filesWithWarning > 0) {
       Logger.warn(`            Found ${totalWarnings} warnings in ${filesWithWarning} files.`);
     }
-    // }
 
     pcompile.end();
   }
@@ -206,6 +202,9 @@ TypeScriptCompiler = class TypeScriptCompiler {
   }
 
   _processDiagnostics(inputFile, diagnostics, tsOptions) {
+    // simple logging
+    diagnostics.syntacticErrors.forEach(err => Logger.warn(err.fileName.slice(-100) + ': ' + err.message));
+
     // Remove duplicated warnings for shared files
     // by saving hashes of already shown warnings.
 
