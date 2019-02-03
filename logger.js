@@ -30,8 +30,12 @@ class Logger_ {
     }
   }
 
-  warn(msg) {
-    process.stdout.write(chalk.bold.yellow(msg + '\n'));
+  warn(msg, ...other) {
+    process.stdout.write(chalk.bold.yellow(msg) + chalk.reset(other.join(' ')) + '\n');
+  }
+
+  error(msg, ...other) {
+    process.stdout.write(chalk.bold.red(msg) + chalk.reset(other.join(' ')) + '\n');
   }
 
   info(msg) {

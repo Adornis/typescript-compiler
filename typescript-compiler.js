@@ -203,7 +203,12 @@ TypeScriptCompiler = class TypeScriptCompiler {
 
   _processDiagnostics(inputFile, diagnostics, tsOptions) {
     // simple logging
-    diagnostics.syntacticErrors.forEach(err => Logger.warn(err.fileName.slice(-100) + ': ' + err.message));
+    diagnostics.syntacticErrors.forEach(err =>
+      Logger.error(err.fileName.slice(-100) + ' (' + err.line + '): ', err.message),
+    );
+    diagnostics.semanticErrors.forEach(err =>
+      Logger.warn(err.fileName.slice(-100) + ':' + err.line + ': ', err.message),
+    );
 
     // Remove duplicated warnings for shared files
     // by saving hashes of already shown warnings.
