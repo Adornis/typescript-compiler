@@ -15,7 +15,7 @@ Npm.depends({
   underscore: '1.9.1',
   diff: '2.2.2',
   'lru-cache': '4.1.1',
-  typescript: '2.8.3',
+  typescript: '3.3.1',
 });
 
 Package.onUse(function(api) {
