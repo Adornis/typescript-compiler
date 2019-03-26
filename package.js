@@ -1,6 +1,6 @@
 Package.describe({
   name: 'adornis:typescript-compiler',
-  version: '0.12.6',
+  version: '0.12.7',
   summary: 'TypeScript Compiler for Meteor, based on barbatus:typescript-compiler',
   git: 'https://github.com/adornis/typescript-compiler',
   documentation: 'README.md',
@@ -15,7 +15,7 @@ Npm.depends({
   underscore: '1.9.1',
   diff: '2.2.2',
   'lru-cache': '4.1.1',
-  typescript: '3.3.1',
+  typescript: '3.3.4000',
 });
 
 Package.onUse(function(api) {

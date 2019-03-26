@@ -26,7 +26,7 @@ export function setCacheDir(cacheDir) {
   if (compileCache && compileCache.cacheDir === cacheDir) {
     return;
   }
- 
+
   compileCache = new CompileCache(cacheDir);
   fileHashCache = new FileHashCache(cacheDir);
 }
@@ -128,6 +128,10 @@ export class TSBuild {
       resOptions.evalDepth || 1,
     );
     prefs.end();
+  }
+
+  getTSVersion() {
+    return ts.version;
   }
 
   getFileOptions(filePath) {

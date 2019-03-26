@@ -100,8 +100,8 @@ TypeScriptCompiler = class TypeScriptCompiler {
     const pbuild = Logger.newProfiler('tsBuild');
     const defaultGet = this._getContentGetter(inputFiles);
     const getContent = filePath => (getDepsContent && getDepsContent(filePath)) || defaultGet(filePath);
-    Logger.info(`[COMPILER]: Starting build for ${options.arch}`);
     const tsBuild = new TSBuild(filePaths, getContent, options);
+    Logger.info(`[COMPILER]: Starting build for ${options.arch} with TS version ${tsBuild.getTSVersion()}`);
     pbuild.end();
 
     const pfiles = Logger.newProfiler('tsEmitFiles');
