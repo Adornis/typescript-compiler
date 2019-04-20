@@ -27,19 +27,3 @@ Package.onUse(function(api) {
 
   api.export(['TypeScript', 'TypeScriptCompiler'], 'server');
 });
-
-Package.onTest(function(api) {
-  api.use([
-    'tinytest',
-    'ecmascript',
-    'underscore',
-    'practicalmeteor:sinon',
-    'practicalmeteor:chai',
-    'practicalmeteor:mocha',
-    'meteortesting:mocha',
-    'dispatch:mocha-phantomjs',
-  ]);
-  api.use('adornis:typescript-compiler');
-
-  api.addFiles(['tests/server/unit/input-file.js', 'tests/server/unit/compiler-tests_spec.js'], 'server');
-});
