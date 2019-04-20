@@ -158,6 +158,7 @@ export class TSBuild {
     const csOptions = this.getFileOptions(filePath);
 
     function compile() {
+      Logger.info('                rebuilding ' + filePath.split('/').slice(-1)[0]);
       const pcomp = logger.newProfiler(`compile ${filePath}`);
       const result = compileService.compile(filePath, csOptions.moduleName);
       pcomp.end();
@@ -172,6 +173,7 @@ export class TSBuild {
     const isTypingsChanged = serviceHost.isTypingsChanged();
     const pget = logger.newProfiler('compileCache get');
     const result = compileCache.get(filePath, csOptions, cacheResult => {
+      cacheResult = undefined;
       if (!cacheResult) {
         logger.debug('cache miss: %s', filePath);
         return compile();
@@ -198,7 +200,7 @@ export class TSBuild {
         const pdiag = logger.newProfiler('diags update');
         csResult.upDiagnostics(compileService.getDiagnostics(filePath));
         pdiag.end();
-        Logger.info('                rebuilding ' + filePath.split('/').slice(-1)[0]);
+        Logger.info(chalk.strikethrough('                diagnostics ' + filePath.split('/').slice(-1)[0]));
         return csResult;
       }
 
