@@ -3,6 +3,7 @@
 import assert from 'assert';
 import ts from 'typescript';
 import _ from 'underscore';
+const chalk = Npm.require('chalk');
 
 import {
   getDefaultCompilerOptions,
