@@ -173,7 +173,6 @@ export class TSBuild {
     const isTypingsChanged = serviceHost.isTypingsChanged();
     const pget = logger.newProfiler('compileCache get');
     const result = compileCache.get(filePath, csOptions, cacheResult => {
-      cacheResult = undefined;
       if (!cacheResult) {
         logger.debug('cache miss: %s', filePath);
         return compile();
