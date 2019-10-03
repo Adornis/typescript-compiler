@@ -1,6 +1,6 @@
 Package.describe({
   name: 'adornis:typescript-compiler',
-  version: '0.12.13',
+  version: '0.12.14',
   summary: 'TypeScript Compiler for Meteor, based on barbatus:typescript-compiler',
   git: 'https://github.com/adornis/typescript-compiler',
   documentation: 'README.md',
@@ -15,7 +15,7 @@ Npm.depends({
   underscore: '1.9.1',
   diff: '2.2.2',
   'lru-cache': '4.1.1',
-  typescript: process.env.TYPESCRIPT_EXTERNAL_PATH ? 'file://' + process.env.TYPESCRIPT_EXTERNAL_PATH : '3.5.1',
+  typescript: process.env.TYPESCRIPT_EXTERNAL_PATH ? 'file://' + process.env.TYPESCRIPT_EXTERNAL_PATH : '3.6.3',
 });
 
 Package.onUse(function(api) {
