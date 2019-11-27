@@ -67,9 +67,9 @@
       "integrity": "sha512-5M9MYfLX3GsUv8YVSxypUkjQvpj5p3lX5gSaZCcV5973EqcQYp576vNU/620C1V6UaCdxeYGk3/QzEWz7uLvUQ=="
     },
     "random-js": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/random-js/-/random-js-2.1.0.tgz",
-      "integrity": "sha512-CRUyWmnzmZBA7RZSVGq0xMqmgCyPPxbiKNLFA5ud7KenojVX2s7Gv+V7eB52beKTPGxWRnVZ7D/tCIgYJJ8vNQ=="
+      "version": "1.0.8",
+      "resolved": "https://registry.npmjs.org/random-js/-/random-js-1.0.8.tgz",
+      "integrity": "sha1-lo/WiabyXWwKrHZig94vaIycGQo="
     },
     "supports-color": {
       "version": "7.1.0",
