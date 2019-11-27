@@ -7,15 +7,14 @@ Package.describe({
 });
 
 Npm.depends({
-  async: '2.5.0',
-  colors: '1.1.2',
-  chalk: '2.4.1',
+  colors: '1.4.0',
+  chalk: '3.0.0',
   'random-js': '1.0.8',
-  'object-sizeof': '1.3.0',
+  'object-sizeof': '1.5.2',
   underscore: '1.9.1',
-  diff: '2.2.2',
-  'lru-cache': '4.1.1',
-  typescript: process.env.TYPESCRIPT_EXTERNAL_PATH ? 'file://' + process.env.TYPESCRIPT_EXTERNAL_PATH : '3.6.3',
+  diff: '4.0.1',
+  'lru-cache': '5.1.1',
+  typescript: process.env.TYPESCRIPT_EXTERNAL_PATH ? 'file://' + process.env.TYPESCRIPT_EXTERNAL_PATH : '3.7.2',
 });
 
 Package.onUse(function(api) {
