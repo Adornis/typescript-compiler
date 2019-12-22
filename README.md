@@ -1,5 +1,7 @@
 ## TypeScript compiler for Meteor
 
+Based on barbatus:typescript-compiler and also embeds the previously separate meteor-typescript package
+
 Exports two symbols:
 
 - `TypeScriptCompiler` - a compiler to be registered using `registerBuildPlugin`

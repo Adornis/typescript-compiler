@@ -60,6 +60,7 @@ function getDefaultCompilerOptions(arch) {
     noImplicitUseStrict: true,
     baseUrl: '.',
     rootDirs: ['.'],
+    importHelpers: true
   };
 
   if (/^web/.test(arch)) {
